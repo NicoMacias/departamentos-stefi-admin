@@ -6,7 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class UsuariosService {
-  private apiUrl = 'https://departamentos-stefi-backend.onrender.com'; // Cambia la URL según tu API
+  private apiUrl =
+    'https://departamentos-stefi-backend.onrender.com' + '/usuario'; // Cambia la URL según tu API
 
   constructor(private http: HttpClient) {}
 
