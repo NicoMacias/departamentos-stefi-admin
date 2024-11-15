@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class ReservasService {
-  private apiUrl = 'http://localhost:8000/reserva';
+  private apiUrl = 'https://departamentos-stefi-backend.onrender.com';
 
   constructor(private http: HttpClient) {}
 

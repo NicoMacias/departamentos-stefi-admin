@@ -6,7 +6,7 @@ import { Observable, tap } from 'rxjs';
   providedIn: 'root',
 })
 export class LoginService {
-  private apiUrl = 'http://localhost:8000/login';
+  private apiUrl = 'https://departamentos-stefi-backend.onrender.com';
 
   constructor(private http: HttpClient) {}
 

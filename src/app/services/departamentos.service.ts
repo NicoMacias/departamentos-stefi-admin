@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class DepartamentosService {
-  private apiUrl = 'http://localhost:8000/departamento';
+  private apiUrl = 'https://departamentos-stefi-backend.onrender.com';
 
   constructor(private http: HttpClient) {}
 
