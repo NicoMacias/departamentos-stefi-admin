@@ -1,0 +1,10 @@
+/* Espacio entre el título y el botón de agregar */
+.d-flex {
+  margin-bottom: 20px;
+}
+
+/* Estilo para la tabla */
+.table th,
+.table td {
+  vertical-align: middle;
+}

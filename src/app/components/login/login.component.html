@@ -1,0 +1,74 @@
+<div class="login-container">
+  <div class="login-box">
+    <img src="../../../assets/media/logo.png" alt="Logo" class="login-logo" />
+    <div class="fs-4 text-center mb-5">
+      <span>Departamentos</span><br />
+      <span>Stefi</span>
+    </div>
+
+    <form *ngIf="loginForm" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <div *ngIf="datosIncorrectos">
+          <div class="text-danger mt-1 mb-2">
+            El usuario o contraseña son incorrectos.
+          </div>
+        </div>
+        <input
+          id="usuario"
+          type="text"
+          formControlName="usuario"
+          class="form-control"
+          placeholder="Usuario"
+          [ngClass]="{
+            'is-invalid':
+              (loginForm.get('usuario')?.invalid &&
+                loginForm.get('usuario')?.touched) ||
+              datosIncorrectos
+          }"
+        />
+        <div
+          *ngIf="
+            loginForm.get('usuario')?.invalid &&
+            loginForm.get('usuario')?.touched
+          "
+        >
+          <div
+            *ngIf="loginForm.get('usuario')?.hasError('required')"
+            class="text-danger mt-1"
+          >
+            Debe ingresar un usuario.
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="form-control"
+          placeholder="Contraseña"
+          [ngClass]="{
+            'is-invalid':
+              (loginForm.get('password')?.invalid &&
+                loginForm.get('password')?.touched) ||
+              datosIncorrectos
+          }"
+        />
+        <div
+          *ngIf="
+            loginForm.get('password')?.invalid &&
+            loginForm.get('password')?.touched
+          "
+        >
+          <div
+            *ngIf="loginForm.get('password')?.hasError('required')"
+            class="text-danger mt-1"
+          >
+            Debe ingresar una contraseña.
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn-login">Iniciar Sesión</button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,401 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>Usuarios</h2>
+    <button class="btn btn-success" (click)="abrirModalAgregar()">
+      Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- DataTable -->
+  <table class="table mt-4">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Usuario</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let usuario of usuarios">
+        <td style="width: 200px">{{ usuario.nombre }}</td>
+        <td style="width: 200px">{{ usuario.apellido }}</td>
+        <td style="width: 200px">{{ usuario.usuario }}</td>
+        <td style="width: 200px">
+          <div class="btn-group">
+            <button
+              type="button"
+              class="btn btn-warning"
+              (click)="setearUsuarioModificar(usuario)"
+            >
+              Modificar
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger ms-2"
+              (click)="setearEliminarUsuario(usuario)"
+            >
+              Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Modal para agregar/editar usuario -->
+  <div
+    class="modal fade"
+    id="usuarioModal"
+    tabindex="-1"
+    aria-labelledby="usuarioModalLabel"
+    aria-hidden="true"
+    (hidden.bs.modal)="resetForm()"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="usuarioModalLabel">
+            {{ esEdicion ? "Modificar Usuario" : "Nuevo Usuario" }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form
+            *ngIf="usuarioForm"
+            [formGroup]="usuarioForm"
+            (ngSubmit)="onSubmit()"
+          >
+            <div class="mb-3">
+              <label for="nombre" class="form-label"
+                ><strong>Nombre</strong></label
+              >
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                class="form-control"
+                placeholder="Nombre"
+                [ngClass]="{
+                  'is-invalid':
+                    usuarioForm.get('nombre')?.invalid &&
+                    usuarioForm.get('nombre')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  usuarioForm.get('nombre')?.invalid &&
+                  usuarioForm.get('nombre')?.touched
+                "
+              >
+                <div
+                  *ngIf="usuarioForm.get('nombre')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El nombre es obligatorio.
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="apellido" class="form-label"
+                ><strong>Apellido</strong></label
+              >
+              <input
+                id="apellido"
+                type="text"
+                formControlName="apellido"
+                class="form-control"
+                placeholder="Apellido"
+                [ngClass]="{
+                  'is-invalid':
+                    usuarioForm.get('apellido')?.invalid &&
+                    usuarioForm.get('apellido')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  usuarioForm.get('apellido')?.invalid &&
+                  usuarioForm.get('apellido')?.touched
+                "
+              >
+                <div
+                  *ngIf="usuarioForm.get('apellido')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El apellido es obligatorio.
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="usuario" class="form-label"
+                ><strong>Usuario</strong></label
+              >
+              <input
+                id="usuario"
+                type="text"
+                formControlName="usuario"
+                class="form-control"
+                placeholder="Usuario para ingresar a la plataforma"
+                [ngClass]="{
+                  'is-invalid':
+                    (usuarioForm.get('usuario')?.invalid &&
+                      usuarioForm.get('usuario')?.touched) ||
+                    usuarioExistente
+                }"
+              />
+              <div
+                *ngIf="
+                  usuarioForm.get('usuario')?.invalid &&
+                  usuarioForm.get('usuario')?.touched
+                "
+              >
+                <div
+                  *ngIf="usuarioForm.get('usuario')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El usuario es obligatorio para poder ingresar a la plataforma.
+                </div>
+              </div>
+              <div
+                *ngIf="usuarioExistente && usuarioForm.get('usuario')?.touched"
+                class="text-danger mt-1"
+              >
+                El usuario ya existe, ingrese otro.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label"
+                ><strong>Contraseña</strong></label
+              >
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                class="form-control"
+                placeholder="Contraseña para ingresar a la plataforma"
+                [ngClass]="{
+                  'is-invalid':
+                    (usuarioForm.get('password')?.invalid &&
+                      usuarioForm.get('password')?.touched) ||
+                    passwordsNoCoinciden
+                }"
+              />
+              <div
+                *ngIf="
+                  usuarioForm.get('password')?.invalid &&
+                  usuarioForm.get('password')?.touched
+                "
+              >
+                <div
+                  *ngIf="usuarioForm.get('password')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  La contraseña es obligatoria para poder ingresar a la
+                  plataforma.
+                </div>
+              </div>
+              <div
+                *ngIf="
+                  usuarioForm.get('passwordConfirmar')?.hasError('noMatch') &&
+                  usuarioForm.get('passwordConfirmar')?.touched
+                "
+                class="text-danger mt-1"
+              >
+                Las contraseñas no coinciden.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label"
+                ><strong>Confirmar Contraseña</strong></label
+              >
+              <input
+                id="passwordConfirmar"
+                type="password"
+                formControlName="passwordConfirmar"
+                class="form-control"
+                placeholder="Confirmar contraseña"
+                [ngClass]="{
+                  'is-invalid':
+                    (usuarioForm.get('passwordConfirmar')?.invalid &&
+                      usuarioForm.get('passwordConfirmar')?.touched) ||
+                    passwordsNoCoinciden
+                }"
+              />
+              <div
+                *ngIf="
+                  usuarioForm.get('passwordConfirmar')?.invalid &&
+                  usuarioForm.get('passwordConfirmar')?.touched
+                "
+              >
+                <div
+                  *ngIf="
+                    usuarioForm.get('passwordConfirmar')?.hasError('required')
+                  "
+                  class="text-danger mt-1"
+                >
+                  Vuelva a ingresar la contraseña para confirmala.
+                </div>
+              </div>
+              <div
+                *ngIf="
+                  usuarioForm.get('passwordConfirmar')?.hasError('noMatch') &&
+                  usuarioForm.get('passwordConfirmar')?.touched
+                "
+                class="text-danger mt-1"
+              >
+                Las contraseñas no coinciden.
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+              <button type="submit" class="btn btn-primary">Confirmar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación de eliminación -->
+  <div
+    class="modal fade"
+    id="eliminarModal"
+    tabindex="-1"
+    aria-labelledby="eliminarModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="eliminarModalLabel">
+            Confirmar eliminación
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          ¿Estás seguro de que deseas eliminar el usuario
+          <strong>{{
+            usuarioAEliminar?.nombre + " " + usuarioAEliminar?.apellido
+          }}</strong
+          >?
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="eliminarUsuario()"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- toasts -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div
+      class="toast align-items-center text-bg-success border-0"
+      id="toastAgregar"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body">El usuario ha sido agregado correctamente</div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div
+      class="toast align-items-center text-bg-success border-0"
+      id="toastModificar"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body">
+          El usuario ha sido modificado correctamente
+        </div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div
+      class="toast align-items-center text-bg-danger border-0"
+      id="toastEliminar"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body">El usuario ha sido elimidado correctamente</div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div
+      class="toast align-items-center text-bg-danger border-0"
+      id="toastError"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body">
+          No se puede eliminar el unico usuario registrado
+        </div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  </div>
+</div>

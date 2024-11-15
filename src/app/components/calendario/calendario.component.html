@@ -1,0 +1,22 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>Calendario</h2>
+  </div>
+  <div class="mb-3">
+    <label for="departamentoSelect" class="form-label"
+      >Filtrar por Departamento</label
+    >
+    <select
+      id="departamentoSelect"
+      class="form-select w-auto"
+      (change)="onDepartamentoChange($event)"
+    >
+      <option value="">Todos</option>
+      <option *ngFor="let dept of departamentos" [value]="dept._id">
+        {{ dept.nombre }}
+      </option>
+    </select>
+  </div>
+
+  <full-calendar [options]="calendarOptions"></full-calendar>
+</div>

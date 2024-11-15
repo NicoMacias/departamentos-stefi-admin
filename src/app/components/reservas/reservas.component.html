@@ -1,0 +1,736 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>Reservas</h2>
+    <button class="btn btn-success" (click)="abrirModalAgregar()">
+      Nueva Reserva
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mt-3">
+    <div class="col-md-3">
+      <label for="filtroNombre">Filtrar por Nombre</label>
+      <input
+        type="text"
+        id="filtroNombre"
+        class="form-control"
+        [(ngModel)]="filtroNombre"
+        placeholder="Ingrese nombre"
+      />
+    </div>
+    <div class="col-md-3">
+      <label for="filtroDepartamento">Filtrar por Departamento</label>
+      <select
+        id="filtroDepartamento"
+        class="form-control"
+        [(ngModel)]="filtroDepartamento"
+      >
+        <option value="">Todos los departamentos</option>
+        <option
+          *ngFor="let departamento of departamentos"
+          [value]="departamento.nombre"
+        >
+          {{ departamento.nombre }}
+        </option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="filtroFechaIngresoInicio">Fecha de Ingreso Desde</label>
+      <input
+        type="date"
+        id="filtroFechaIngresoInicio"
+        class="form-control"
+        [(ngModel)]="filtroFechaIngresoInicio"
+      />
+    </div>
+    <div class="col-md-3">
+      <label for="filtroFechaIngresoFin">Fecha de Ingreso Hasta</label>
+      <input
+        type="date"
+        id="filtroFechaIngresoFin"
+        class="form-control"
+        [(ngModel)]="filtroFechaIngresoFin"
+      />
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col-md-3 offset-md-9 d-flex align-items-end">
+      <button class="btn btn-primary w-100" (click)="aplicarFiltros()">
+        Filtrar
+      </button>
+    </div>
+  </div>
+
+  <!-- DataTable -->
+  <table class="table mt-4">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Fecha Ingreso</th>
+        <th>Fecha Egreso</th>
+        <th>Departamento</th>
+        <th>Huéspedes</th>
+        <th>Precio por Dia</th>
+        <th>Monto Seña</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="
+          let reserva of reservasFiltradas
+            | paginate
+              : { itemsPerPage: reservasPorPagina, currentPage: paginaActual }
+        "
+      >
+        <td>{{ reserva.nombre + " " + reserva.apellido }}</td>
+        <td>{{ reserva.fechaIngreso | dateFormat }}</td>
+        <td>{{ reserva.fechaEgreso | dateFormat }}</td>
+        <td>{{ reserva.departamento.nombre }}</td>
+        <td>{{ reserva.personas }}</td>
+        <td>
+          {{ reserva.precioPorDia | currency : "$" : "symbol" : "1.0-0" }}
+        </td>
+        <td>
+          {{ reserva.montoSenia | currency : "$" : "symbol" : "1.0-0" }}
+        </td>
+        <td>
+          <div class="btn-group">
+            <button
+              type="button"
+              class="btn btn-warning"
+              (click)="setearReservaModificar(reserva)"
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger ms-2"
+              (click)="setearEliminarDepartamento(reserva)"
+            >
+              Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- Controles de paginación -->
+  <pagination-controls
+    (pageChange)="paginaActual = $event"
+    previousLabel="Anterior"
+    nextLabel="Siguiente"
+    firstLabel="Primera"
+    lastLabel="Última"
+  ></pagination-controls>
+</div>
+
+<!-- modal agregar/editar reserva -->
+<div
+  class="modal fade"
+  id="reservaModal"
+  tabindex="-1"
+  aria-labelledby="reservaModalLabel"
+  aria-hidden="true"
+  (hidden.bs.modal)="resetForm()"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reservaModalLabel">
+          {{ esEdicion ? "Modificar Reserva" : "Nueva Reserva" }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form
+          *ngIf="reservaForm"
+          [formGroup]="reservaForm"
+          (ngSubmit)="onSubmit()"
+        >
+          <div class="row">
+            <h3 class="text-center" style="color: orange">
+              Datos de la Reserva
+            </h3>
+            <div class="col-md-6 mb-3">
+              <label for="fechaIngreso" class="form-label"
+                ><strong>Fecha ingreso</strong></label
+              >
+              <input
+                id="fechaIngreso"
+                type="date"
+                formControlName="fechaIngreso"
+                class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('fechaIngreso')?.invalid &&
+                    reservaForm.get('fechaIngreso')?.touched || reservaForm.errors?.['fechasInvalidas']
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('fechaIngreso')?.invalid &&
+                  reservaForm.get('fechaIngreso')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('fechaIngreso')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  La fecha de ingreso es obligatoria.
+                </div>
+              </div>
+              <div
+                *ngIf="reservaForm.errors?.['fechasInvalidas']"
+                class="text-danger mt-2"
+              >
+                La fecha de ingreso debe ser menor que la fecha de egreso.
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="fechaHasta" class="form-label"
+                ><strong>Fecha hasta</strong></label
+              >
+              <input
+                id="fechaEgreso"
+                type="date"
+                formControlName="fechaEgreso"
+                class="form-control"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('fechaEgreso')?.invalid &&
+                    reservaForm.get('fechaEgreso')?.touched || reservaForm.errors?.['fechasInvalidas']
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('fechaEgreso')?.invalid &&
+                  reservaForm.get('fechaEgreso')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('fechaEgreso')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  La fecha de egreso es obligatoria.
+                </div>
+              </div>
+              <div
+                *ngIf="reservaForm.errors?.['fechasInvalidas']"
+                class="text-danger mt-2"
+              >
+                La fecha de ingreso debe ser menor que la fecha de egreso.
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="departamento" class="form-label"
+                ><strong>Departamento</strong></label
+              >
+              <select
+                id="departamento"
+                formControlName="departamento"
+                class="form-select"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('departamento')?.invalid &&
+                    reservaForm.get('departamento')?.touched
+                }"
+              >
+                <option
+                  *ngFor="let departamento of departamentos"
+                  [value]="departamento._id"
+                >
+                  {{ departamento.nombre }}
+                </option>
+              </select>
+              <div
+                *ngIf="
+                  reservaForm.get('departamento')?.invalid &&
+                  reservaForm.get('departamento')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('departamento')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El departamento a reservar es obligatorio.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="personas" class="form-label"
+                ><strong>Cantidad de huéspedes</strong></label
+              >
+              <input
+                id="personas"
+                type="number"
+                formControlName="personas"
+                class="form-control"
+                placeholder="Cantidad de huéspedes"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('personas')?.invalid &&
+                    reservaForm.get('personas')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('personas')?.invalid &&
+                  reservaForm.get('personas')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('personas')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  La cantidad de huéspedes es obligatoria.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="precioPorDia" class="form-label"
+                ><Strong>Precio por dia</Strong></label
+              >
+              <input
+                id="precioPorDia"
+                type="number"
+                formControlName="precioPorDia"
+                class="form-control"
+                placeholder="Precio por dia"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('precioPorDia')?.invalid &&
+                    reservaForm.get('precioPorDia')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('precioPorDia')?.invalid &&
+                  reservaForm.get('precioPorDia')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('precioPorDia')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El precio por dia es obligatorio.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="montoSenia" class="form-label"
+                ><strong>Monto de seña</strong></label
+              >
+              <input
+                id="montoSenia"
+                type="number"
+                formControlName="montoSenia"
+                class="form-control"
+                placeholder="Monto de seña"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('montoSenia')?.invalid &&
+                    reservaForm.get('montoSenia')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('montoSenia')?.invalid &&
+                  reservaForm.get('montoSenia')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('montoSenia')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El monto de la seña es obligatorio.
+                </div>
+              </div>
+            </div>
+
+            <h3 class="text-center mt-4" style="color: orange">
+              Datos Personales
+            </h3>
+            <div class="col-md-6 mb-3">
+              <label for="nombre" class="form-label"
+                ><strong>Nombre</strong></label
+              >
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                class="form-control"
+                placeholder="Nombre"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('nombre')?.invalid &&
+                    reservaForm.get('nombre')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('nombre')?.invalid &&
+                  reservaForm.get('nombre')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('nombre')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El nombre es obligatorio.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="apellido" class="form-label"
+                ><strong>Apellido</strong></label
+              >
+              <input
+                id="apellido"
+                type="text"
+                formControlName="apellido"
+                class="form-control"
+                placeholder="Apellido"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('apellido')?.invalid &&
+                    reservaForm.get('apellido')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('apellido')?.invalid &&
+                  reservaForm.get('apellido')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('apellido')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El apellido es obligatorio.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="direccion" class="form-label"
+                ><strong>Dirección</strong></label
+              >
+              <input
+                id="direccion"
+                type="text"
+                formControlName="direccion"
+                class="form-control"
+                placeholder="Dirección"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('direccion')?.invalid &&
+                    reservaForm.get('direccion')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('direccion')?.invalid &&
+                  reservaForm.get('direccion')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('direccion')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  La direccion es obligatoria.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="ciudad" class="form-label"
+                ><strong>Ciudad</strong></label
+              >
+              <input
+                id="ciudad"
+                type="text"
+                formControlName="ciudad"
+                class="form-control"
+                placeholder="Ciudad"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('ciudad')?.invalid &&
+                    reservaForm.get('ciudad')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('ciudad')?.invalid &&
+                  reservaForm.get('ciudad')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('ciudad')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  La ciudad es obligatoria.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="celular1" class="form-label"
+                ><strong>Teléfono</strong></label
+              >
+              <input
+                id="celular1"
+                type="text"
+                formControlName="celular1"
+                class="form-control"
+                placeholder="Teléfono 1"
+                [ngClass]="{
+                  'is-invalid':
+                    reservaForm.get('celular1')?.invalid &&
+                    reservaForm.get('celular1')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  reservaForm.get('celular1')?.invalid &&
+                  reservaForm.get('celular1')?.touched
+                "
+              >
+                <div
+                  *ngIf="reservaForm.get('celular1')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El celular 1 es obligatorio.
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="celular2" class="form-label"
+                ><strong>Teléfono 2</strong></label
+              >
+              <input
+                id="celular2"
+                type="text"
+                formControlName="celular2"
+                class="form-control"
+                placeholder="Teléfono 2"
+              />
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="observaciones" class="form-label"
+                ><strong>Observaciones</strong></label
+              >
+              <textarea
+                id="observaciones"
+                type="text"
+                formControlName="observaciones"
+                class="form-control"
+                rows="3"
+                placeholder="Observaciones"
+              ></textarea>
+            </div>
+            <h3
+              *ngIf="esEdicion"
+              class="text-center mt-4"
+              style="color: orange"
+            >
+              Datos Extras
+            </h3>
+            <div *ngIf="esEdicion" class="col-md-6 mb-3">
+              <label for="dni" class="form-label"><strong>DNI</strong></label>
+              <input
+                id="dni"
+                type="text"
+                formControlName="dni"
+                class="form-control"
+                placeholder="DNI"
+              />
+            </div>
+            <div *ngIf="esEdicion" class="col-md-6 mb-3">
+              <label for="edad" class="form-label"><strong>Edad</strong></label>
+              <input
+                id="edad"
+                type="number"
+                formControlName="edad"
+                class="form-control"
+                placeholder="Edad"
+              />
+            </div>
+            <div *ngIf="esEdicion" class="col-md-6 mb-3">
+              <label for="patenteAuto" class="form-label"
+                ><strong>Patente Auto</strong></label
+              >
+              <input
+                id="patenteAuto"
+                type="text"
+                formControlName="patenteAuto"
+                class="form-control"
+                placeholder="Patente Auto"
+              />
+            </div>
+            <div *ngIf="esEdicion" class="col-md-6 mb-3">
+              <label for="modeloAuto" class="form-label"
+                ><strong>Auto</strong></label
+              >
+              <input
+                id="modeloAuto"
+                type="text"
+                formControlName="modeloAuto"
+                class="form-control"
+                placeholder="Auto"
+              />
+            </div>
+            <div *ngIf="esEdicion" class="col-md-6 mb-3">
+              <label for="montoTotalEstadia" class="form-label"
+                ><strong>Monto total de estadia</strong></label
+              >
+              <input
+                id="montoTotalEstadia"
+                type="number"
+                formControlName="montoTotalEstadia"
+                class="form-control"
+                placeholder="Monto total de estadia"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cerrar
+            </button>
+            <button type="submit" class="btn btn-primary">Confirmar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div
+  class="modal fade"
+  id="eliminarModal"
+  tabindex="-1"
+  aria-labelledby="eliminarModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="eliminarModalLabel">
+          Confirmar eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas eliminar la siguiente reserva?<br />
+        Nombre:
+        <strong>{{
+          reservaAEliminar?.nombre + " " + reservaAEliminar?.apellido
+        }}</strong
+        ><br />
+        Fecha Ingreso:
+        <strong>{{ reservaAEliminar?.fechaIngreso | dateFormat }}</strong
+        ><br />
+        Fecha Egreso:
+        <strong>{{ reservaAEliminar?.fechaEgreso | dateFormat }}</strong
+        ><br />
+        Departamento:
+        <strong>{{ reservaAEliminar?.departamento.nombre }}</strong
+        ><br />
+        Huéspedes:
+        <strong>{{ reservaAEliminar?.personas }}</strong
+        ><br />
+        Precio por Dia:
+        <strong>{{ reservaAEliminar?.precioPorDia }}</strong
+        ><br />
+        Monto Seña:
+        <strong>{{ reservaAEliminar?.montoSenia }}</strong
+        ><br />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="eliminarReserva()"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- toasts -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div
+    class="toast align-items-center text-bg-success border-0"
+    id="toastAgregar"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="d-flex">
+      <div class="toast-body">La reserva ha sido agregada correctamente</div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div
+    class="toast align-items-center text-bg-success border-0"
+    id="toastModificar"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="d-flex">
+      <div class="toast-body">La reserva ha sido modificada correctamente</div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div
+    class="toast align-items-center text-bg-danger border-0"
+    id="toastEliminar"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="d-flex">
+      <div class="toast-body">La reserva ha sido elimidada correctamente</div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+    </div>
+  </div>
+</div>

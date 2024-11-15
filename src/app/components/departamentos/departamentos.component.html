@@ -1,0 +1,301 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>Departamentos</h2>
+    <button class="btn btn-success" (click)="abrirModalAgregar()">
+      Nuevo Departamento
+    </button>
+  </div>
+
+  <!-- DataTable -->
+  <table class="table mt-4">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Capacidad</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let departamento of departamentos">
+        <td style="width: 200px">{{ departamento.nombre }}</td>
+        <td style="width: 200px">{{ departamento.capacidad }}</td>
+        <td style="width: 200px">
+          <div class="btn-group">
+            <button
+              type="button"
+              class="btn btn-warning"
+              (click)="setearDepartamentoModificar(departamento)"
+            >
+              Modificar
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger ms-2"
+              (click)="setearEliminarDepartamento(departamento)"
+            >
+              Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Modal para agregar/editar departamento -->
+  <div
+    class="modal fade"
+    id="departamentoModal"
+    tabindex="-1"
+    aria-labelledby="departamentoModalLabel"
+    aria-hidden="true"
+    (hidden.bs.modal)="resetForm()"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="departamentoModalLabel">
+            {{ esEdicion ? "Modificar Departamento" : "Nuevo Departamento" }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form
+            *ngIf="departamentoForm"
+            [formGroup]="departamentoForm"
+            (ngSubmit)="onSubmit()"
+          >
+            <div class="mb-3">
+              <label for="nombre" class="form-label"
+                ><strong>Nombre Departamento</strong></label
+              >
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                class="form-control"
+                placeholder="Nombre del departamento"
+                [ngClass]="{
+                  'is-invalid':
+                    departamentoForm.get('nombre')?.invalid &&
+                    departamentoForm.get('nombre')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  departamentoForm.get('nombre')?.invalid &&
+                  departamentoForm.get('nombre')?.touched
+                "
+              >
+                <div
+                  *ngIf="departamentoForm.get('nombre')?.hasError('required')"
+                  class="text-danger mt-1"
+                >
+                  El nombre del departamento es obligatorio.
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="capacidad" class="form-label"
+                ><strong>Capacidad</strong></label
+              >
+              <input
+                id="capacidad"
+                type="number"
+                formControlName="capacidad"
+                class="form-control"
+                placeholder="Capacidad"
+                [ngClass]="{
+                  'is-invalid':
+                    departamentoForm.get('capacidad')?.invalid &&
+                    departamentoForm.get('capacidad')?.touched
+                }"
+              />
+              <div
+                *ngIf="
+                  departamentoForm.get('capacidad')?.invalid &&
+                  departamentoForm.get('capacidad')?.touched
+                "
+              >
+                <div
+                  *ngIf="
+                    departamentoForm.get('capacidad')?.hasError('required')
+                  "
+                  class="text-danger mt-1"
+                >
+                  La capacidad del departamento es obligatoria.
+                </div>
+                <div
+                  *ngIf="departamentoForm.get('capacidad')?.hasError('min')"
+                  class="text-danger mt-1"
+                >
+                  La capacidad debe ser mayor que 0.
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="descripcion" class="form-label"
+                ><strong>Descripción</strong></label
+              >
+              <textarea
+                id="descripcion"
+                formControlName="descripcion"
+                class="form-control"
+                rows="15"
+                placeholder="Descripción del departamento"
+                [ngClass]="{
+                  'is-invalid':
+                    departamentoForm.get('descripcion')?.invalid &&
+                    departamentoForm.get('descripcion')?.touched
+                }"
+              ></textarea>
+              <div
+                *ngIf="
+                  departamentoForm.get('descripcion')?.invalid &&
+                  departamentoForm.get('descripcion')?.touched
+                "
+              >
+                <div
+                  *ngIf="
+                    departamentoForm.get('descripcion')?.hasError('required')
+                  "
+                  class="text-danger mt-1"
+                >
+                  La descripción es obligatoria.
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+              <button type="submit" class="btn btn-primary">Confirmar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación de eliminación -->
+  <div
+    class="modal fade"
+    id="eliminarModal"
+    tabindex="-1"
+    aria-labelledby="eliminarModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="eliminarModalLabel">
+            Confirmar eliminación
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          ¿Estás seguro de que deseas eliminar el departamento
+          <strong>{{ departamentoAEliminar?.nombre }}</strong
+          >?
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="eliminarDepartamento()"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- toasts -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div
+      class="toast align-items-center text-bg-success border-0"
+      id="toastAgregar"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body">
+          El departamento ha sido agregado correctamente
+        </div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div
+      class="toast align-items-center text-bg-success border-0"
+      id="toastModificar"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body">
+          El departamento ha sido modificado correctamente
+        </div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div
+      class="toast align-items-center text-bg-danger border-0"
+      id="toastEliminar"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body">
+          El departamento ha sido elimidado correctamente
+        </div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  </div>
+</div>

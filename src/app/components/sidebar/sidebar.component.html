@@ -1,0 +1,71 @@
+<div *ngIf="authService.isLoggedIn()" class="sidebar p-3">
+  <a
+    [routerLink]="['/inicio']"
+    class="d-flex flex-column align-items-center text-decoration-none mb-3"
+  >
+    <img
+      src="../../../assets/media/logo.png"
+      alt="Logo"
+      width="100"
+      height="100"
+      class="mb-2"
+    />
+    <div class="fs-4 text-center">
+      <span>Departamentos</span><br />
+      <span>Stefi</span>
+    </div>
+  </a>
+
+  <div class="fs-4 text-center">
+    <span>Bienvenido/a,</span><br />
+    <span>{{ username }}</span>
+  </div>
+  <hr />
+  <ul class="nav nav-pills flex-column mb-auto">
+    <li class="nav-item">
+      <a [routerLink]="['/inicio']" routerLinkActive="active" class="nav-link">
+        Inicio
+      </a>
+    </li>
+    <li>
+      <a
+        [routerLink]="['/reservas']"
+        routerLinkActive="active"
+        class="nav-link"
+      >
+        Reservas
+      </a>
+    </li>
+    <li>
+      <a
+        [routerLink]="['/calendario']"
+        routerLinkActive="active"
+        class="nav-link"
+      >
+        Calendario
+      </a>
+    </li>
+    <li>
+      <a
+        [routerLink]="['/departamentos']"
+        routerLinkActive="active"
+        class="nav-link"
+      >
+        Departamentos
+      </a>
+    </li>
+    <li>
+      <a
+        [routerLink]="['/usuarios']"
+        routerLinkActive="active"
+        class="nav-link"
+      >
+        Usuarios
+      </a>
+    </li>
+  </ul>
+  <hr />
+  <button (click)="onLogout()" class="nav-link text-danger">
+    Cerrar Sesión
+  </button>
+</div>

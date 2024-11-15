@@ -1,0 +1,13 @@
+.main-content {
+  margin-left: 250px; /* Ajustar al ancho del sidebar */
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
+.content {
+  margin-left: 280px; /* Asegúrate de que el contenido no se superponga con el sidebar */
+}

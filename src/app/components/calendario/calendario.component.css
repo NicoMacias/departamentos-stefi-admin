@@ -1,0 +1,8 @@
+.fc-event {
+  height: 500px !important; /* Ajusta el tamaño que desees */
+}
+
+.fc-event {
+  padding: 50px;
+  line-height: 2;
+}
