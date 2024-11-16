@@ -6,18 +6,19 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class DepartamentosService {
-  private apiUrl =
-    'https://departamentos-stefi-backend.onrender.com' + '/departamento';
+  private apiUrl = 'https://departamentos-stefi-backend.onrender.com';
 
   constructor(private http: HttpClient) {}
 
   obtenerDepartamentos(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/getAll`);
+    return this.http.get(`${this.apiUrl}/departamento/getAll`);
   }
 
   registrarDepartamento(bodyData: any, token: string): Observable<any> {
     const headers = new HttpHeaders().set('authorization', token);
-    return this.http.post(`${this.apiUrl}/create`, bodyData, { headers });
+    return this.http.post(`${this.apiUrl}/departamento/create`, bodyData, {
+      headers,
+    });
   }
 
   actualizarDepartamento(
@@ -26,13 +27,19 @@ export class DepartamentosService {
     token: string
   ): Observable<any> {
     const headers = new HttpHeaders().set('authorization', token);
-    return this.http.patch(`${this.apiUrl}/update/${id}`, bodyData, {
-      headers,
-    });
+    return this.http.patch(
+      `${this.apiUrl}/departamento/update/${id}`,
+      bodyData,
+      {
+        headers,
+      }
+    );
   }
 
   eliminarDepartamento(id: string, token: string): Observable<any> {
     const headers = new HttpHeaders().set('authorization', token);
-    return this.http.delete(`${this.apiUrl}/delete/${id}`, { headers });
+    return this.http.delete(`${this.apiUrl}/departamento/delete/${id}`, {
+      headers,
+    });
   }
 }

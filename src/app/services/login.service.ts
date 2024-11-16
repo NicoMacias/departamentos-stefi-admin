@@ -6,13 +6,12 @@ import { Observable, tap } from 'rxjs';
   providedIn: 'root',
 })
 export class LoginService {
-  private apiUrl =
-    'https://departamentos-stefi-backend.onrender.com' + '/login';
+  private apiUrl = 'https://departamentos-stefi-backend.onrender.com';
 
   constructor(private http: HttpClient) {}
 
   login(bodyData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}`, bodyData).pipe(
+    return this.http.post(`${this.apiUrl}/login`, bodyData).pipe(
       tap((response: any) => {
         if (response.status) {
           localStorage.setItem('token', response.token);
